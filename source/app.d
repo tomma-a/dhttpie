@@ -37,13 +37,14 @@ int main(string[] args)
     bool json = false;
     bool formpost = false;
     bool showversion = false;
+    string outfilename="";
     string userpass = "";
-
+    File outfile=stdout;
     auto argsp = getopt(args, std.getopt.config.caseSensitive, "V|verbose", "verbose mode",
             &verbose, "f|form", "form post", &formpost, "j|json",
             "json format", &json, "u|auth", "basic user auth", &userpass,
             "-t|timeout", "timeout seconds", &durseconds, "max-redirects",
-            "max direct ", &maxdirect, "v|version", "show version", &showversion);
+            "max direct ", &maxdirect,"o|out","output content to the file",&outfilename, "v|version", "show version", &showversion);
     if (argsp.helpWanted)
     {
         defaultGetoptPrinter(helpText, argsp.options);
@@ -79,6 +80,8 @@ int main(string[] args)
         req.timeout = dur!"seconds"(durseconds);
     if (maxdirect >= 0)
         req.maxRedirects = maxdirect;
+    if(outfilename.length>0)
+	outfile=File(outfilename,"wb");
     if (userpass.length > 0)
     {
         auto ss = userpass.split(":");
@@ -132,33 +135,35 @@ int main(string[] args)
     {
     case HttpMethod.GET:
         auto resp = req.get(args[urlpos], params);
-        writeln(resp.responseBody);
+        outfile.writeln(resp.responseBody);
         break;
     case HttpMethod.POST:
         if (formpost)
         {
             auto resp = req.post(args[urlpos], forms);
-            writeln(resp.responseBody);
+            outfile.writeln(resp.responseBody);
         }
         else if (json)
         {
             auto resp = req.post(args[urlpos], to!(string)(jsons), "application/json");
-            writeln(resp.responseBody);
+            outfile.writeln(resp.responseBody);
         }
         else
         {
             auto resp = req.post(args[urlpos], params);
-            writeln(resp.responseBody);
+            outfile.writeln(resp.responseBody);
         }
         break;
     case HttpMethod.PUT:
         auto resp = req.put(args[urlpos], queryParams());
-        writeln(resp.responseBody);
+        outfile.writeln(resp.responseBody);
         break;
     default:
         auto resp = req.deleteRequest(args[urlpos], queryParams());
-        writeln(resp.responseBody);
+        outfile.writeln(resp.responseBody);
     }
+    if(outfilename.length>0)
+	outfile.close();
     return 0;
 }
 
