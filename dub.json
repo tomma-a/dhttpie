@@ -1,0 +1,11 @@
+{
+	"authors": [
+		"tomma"
+	],
+	"copyright": "Copyright © 2023,tomma",
+	"dependencies": {
+		"requests": "~>2.0.9"
+	},
+	"description": "A simple dlang version httpie",
+	"name": "dhttpie"
+}
